@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="../../docs-assets/ico/favicon.png">
+
+    <title>Sample Data Generator</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+	<link href="css/styles.css" rel="stylesheet">
+    <!--[if lt IE 9]><script src="../../docs-assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body onload="init()">
+    <div class="page-header">
+		<h1>Sample Data Generator <small>by Veronica Vega</small></h1>
+	</div>
+	<div class="row">
+		<div class="container">
+			<div class="col-lg-8">
+				<h3><span class="label label-default">Step 1:</span>&nbsp;Draw a Curve</h3>
+				<canvas id = "drawing"></canvas>
+			</div>
+			<div class="col-lg-4">
+				<h3><span class="label label-default">Step 2:</span>&nbsp;Enter Graph Info</h3>
+				<div id="canvas_form">
+					<div class="input-group">
+						<span class="input-group-addon">XMIN</span>
+						<input type="text" class="form-control">
+					</div>
+					<div class="input-group">
+						<span class="input-group-addon">XMAX</span>
+						<input type="text" class="form-control">
+					</div>
+					<div class="input-group">
+						<span class="input-group-addon">YMIN</span>
+						<input type="text" class="form-control">
+					</div>
+					<div class="input-group">
+						<span class="input-group-addon">YMAX</span>
+						<input type="text" class="form-control">
+					</div>
+					<div class="input-group">
+						<span class="input-group-addon">STDEV</span>
+						<input type="text" class="form-control">
+					</div>
+				</div>
+			</div>		
+		</div>
+	</div>
+	<div class="row">
+		<div class="container">
+			<div class="col-lg-5">
+			<h3><span class="label label-default">Step 3:</span>&nbsp;Enter Number of Tests</h3>
+				<div class="input-group" id="num_values_entry">
+					  <span class="input-group-addon">Number of tests:</span>
+					  <input type="text" class="form-control" id="num_tests">
+					  <div class="input-group-btn">
+						<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Type of x value&nbsp;<span class="caret"></span></button>
+						<ul class="dropdown-menu pull-right">
+						  <li onclick="showRandom()"><a href="#">Random</a></li>
+						  <li class="divider"></li>
+						  <li onclick="showFixed()"><a href="#">Fixed</a></li>
+						</ul>
+					 </div>
+					  <!-- /btn-group -->
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="container">
+			<div class="col-lg-12">
+				<div id="random_content">
+					<p><a class="btn btn-primary btn-lg" data-loading-text="Generating..." role="button">Generate Random Data</a></p>
+				</div>
+				<div id="fixed_content">
+					<ul class="nav nav-tabs nav-justified">
+					  <li class="active"><a href="#value_section" data-toggle="tab">Fixed Values</a></li>
+					  <li><a href="#interval_section">Intervals</a></li>
+					</ul>
+					<div class="panel panel-default">
+						<div class="tab-content">
+							<div class="tab-pane fade in active" id="value_section">
+								<div class="col-lg-6">
+									<h3><span class="label label-default">Step 4:</span>&nbsp;Enter Number of Possible x Values</h3>
+									<div class="col-lg-6">
+										<div class="input-group">
+											<span class="input-group-addon">Number of x values:</span>
+											<input type="text" class="form-control" id="num_values" onblur="addFields()">
+										</div>
+									</div>
+								</div>
+								<div class="col-lg-12">
+									<div id ="value_entry_container">
+									</div>
+								</div>
+							</div>
+							<div class="tab-pane fade in" id="interval_section">
+								<h3><span class="label label-default">Step 4:</span>&nbsp;Enter Desired Interval</h3>
+							</div>
+						</div>
+					</div>
+					<p><a class="btn btn-primary btn-lg" data-loading-text="Generating..." role="button">Generate Fixed Data</a></p>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!--Template elements-->
+	<div style="display:none">
+		<div id = "value_entry_template">
+			<div class="input-group">
+				<span class="input-group-addon"></span>
+				<input type="text" class="form-control">
+			</div>
+		</div
+	</div>
+	<!-- <ul class="nav nav-tabs nav-justified" id="value_entry_container">
+		  <li class="active"><a href="#random" data-toggle="tab">Enter Random Values</a></li>
+		  <li><a href="#fixed" data-toggle="tab">Enter Fixed Values</a></li>
+		</ul> -->
+
+		<!-- Tab panes -->
+		<!-- <div class="panel panel-default">
+			<div class="tab-content">
+			  <div class="tab-pane active" id="random">Random</div>
+			  <div class="tab-pane" id="fixed">Fixed</div>
+			</div>
+		</div> -->
+	
+	 <img id="canvasimg" style="position:absolute;top:10%;left:52%;" style="display:none;">
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+	<script src="js/canvas.js"></script>
+	<script src="js/script.js"></script>
+  </body>
+</html>

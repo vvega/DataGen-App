@@ -1,0 +1,41 @@
+.page-header  h1{
+	margin-left: 25px;
+}
+#drawing {
+	width: 700px;
+	height: 500px;
+	border: 1px solid #000;
+	margin-top: 10px;
+}
+#canvas_form {
+   margin-top: 20px;
+}
+#canvas_form .input-group-addon {
+	width: 80px;
+}
+.tab-pane {
+	height: 400px;
+}
+.input-group {
+	margin-bottom: 10px;
+}
+#canvas_form input[type="text"] {
+	max-width: 75px;
+}
+#num_values_entry {
+	margin-top: 20px;
+}
+#random_content {
+	display: none;
+}
+#fixed_content {
+	display: none;
+}
+#value_entry_container div{
+	width: 140px;
+	margin-right: 14px;
+	float: left;
+}
+#value_entry_container span{
+	width: 60px;
+}
