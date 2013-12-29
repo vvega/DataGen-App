@@ -1,85 +1,74 @@
-var canvas, ctx, flag = false,
-    prevX = 0,
-    currX = 0,
-    prevY = 0,
-    currY = 0,
-    dot_flag = false;
+/* © 2009 ROBO Design
+ * http://www.robodesign.ro
+ */
+ var mousePos = [];
+ var canvas;
+// Keep everything in anonymous function, called on window load.
+if(window.addEventListener) {
+	window.addEventListener('load', function () {
+	  var context, offsetX, offsetY;
+	  offsetX = 15;
+	  offsetY = 64;
 
-var x = "black",
-    y = 2;
+	  // Initialization sequence.
+	  function init () {
+		canvas = document.getElementById('drawing');
+		context = canvas.getContext('2d');
+		clearBtn = document.getElementById('clear');
+		
+		canvas.addEventListener('mousedown', ev_mousedown, false);
+		canvas.addEventListener('mouseup', stopDrawing, false);
+		canvas.addEventListener('mousemove', ev_mousemove, false);
+		canvas.addEventListener('mouseout', stopDrawing, false);
+		clearBtn.addEventListener('mousedown', clearCanvas, false);
+	  }
 
-function init() {
-    canvas = document.getElementById('drawing');
-    ctx = canvas.getContext("2d");
-    w = canvas.width;
-    h = canvas.height;
+	  // The mousemove event handler.
+	  var started = false;
+	  
+	  function clearCanvas() {
+		started = false;
+		context.closePath();
+		context.clearRect(0, 0, canvas.width, canvas.height);
+		mousePos = [];
+		return;
+	  }
+	  function stopDrawing() {
+		started = false;
+	  }
+	  function ev_mousedown (ev) {
+		started = true;
+	  }
+	  function ev_mousemove (ev) {
+		  if(started) {
+				var x, y;
 
-    canvas.addEventListener("mousemove", function (e) {
-        findxy('move', e)
-    }, false);
-    canvas.addEventListener("mousedown", function (e) {
-        findxy('down', e)
-    }, false);
-    canvas.addEventListener("mouseup", function (e) {
-        findxy('up', e)
-    }, false);
-    canvas.addEventListener("mouseout", function (e) {
-        findxy('out', e)
-    }, false);
-}
+				// Get the mouse position relative to the canvas element.
+				if (ev.layerX || ev.layerX == 0) { // Firefox
+				  x = ev.layerX - offsetX;
+				  y = ev.layerY - offsetY;
+				} else if (ev.offsetX || ev.offsetX == 0) { // Opera
+				  x = ev.offsetX - offsetX;
+				  y = ev.offsetY - offsetY;
+				}
+				
+				//save coordinates
+				mousePos.push({"x":x,"y":y});
+				
+				// The event handler works like a drawing pencil which tracks the mouse 
+				// movements. We start drawing a path made up of lines.
+				if (!started) {
+				  context.beginPath();
+				  context.moveTo(x, y);
+				  started = true;
+				} else {
+				  context.lineTo(x, y);
+				  context.stroke();
+				}
+			  }
+		  }
 
-function draw() {
-    ctx.beginPath();
-    ctx.moveTo(prevX, prevY);
-    ctx.lineTo(currX, currY);
-    ctx.strokeStyle = x;
-    ctx.lineWidth = y;
-    ctx.stroke();
-    ctx.closePath();
-}
+	  init();
+	}, false); }
 
-function erase() {
-    var m = confirm("Want to clear");
-    if (m) {
-        ctx.clearRect(0, 0, w, h);
-        document.getElementById("canvasimg").style.display = "none";
-    }
-}
-
-function save() {
-    document.getElementById("canvasimg").style.border = "2px solid";
-    var dataURL = canvas.toDataURL();
-    document.getElementById("canvasimg").src = dataURL;
-    document.getElementById("canvasimg").style.display = "inline";
-}
-
-function findxy(res, e) {
-    if (res == 'down') {
-        prevX = currX;
-        prevY = currY;
-        currX = e.clientX - canvas.offsetLeft;
-        currY = e.clientY - canvas.offsetTop;
-
-        flag = true;
-        dot_flag = true;
-        if (dot_flag) {
-            ctx.beginPath();
-            ctx.fillStyle = x;
-            ctx.fillRect(currX, currY, 2, 2);
-            ctx.closePath();
-            dot_flag = false;
-        }
-    }
-    if (res == 'up' || res == "out") {
-        flag = false;
-    }
-    if (res == 'move') {
-        if (flag) {
-            prevX = currX;
-            prevY = currY;
-            currX = e.clientX - canvas.offsetLeft;
-            currY = e.clientY - canvas.offsetTop;
-            draw();
-        }
-    }
-}
+// vim:set spell spl=en fo=wan1croql tw=80 ts=2 sw=2 sts=2 sta et ai cin fenc=utf-8 ff=unix:
