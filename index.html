@@ -52,8 +52,8 @@
 						<input type="text" id="ymax" class="form-control">
 					</div>
 					<div class="input-group">
-						<span class="input-group-addon">STDEV</span>
-						<input type="text" id="stdev" class="form-control">
+						<span class="input-group-addon">YDEV</span>
+						<input type="text" id="ydev" class="form-control">
 					</div>
 				</div>
 			</div>		
@@ -84,6 +84,10 @@
 			<div class="col-lg-12">
 				<div id="random_content">
 					<p><a class="btn btn-primary btn-lg" onclick="processRandom()" data-loading-text="Generating..." role="button">Generate Random Data</a></p>
+					<div class="panel panel-default" id="random_results_container" style="display:none;">
+						<table class = "table table-striped" id="random_results" style="display:none;"></table>
+					</div>
+					
 				</div>
 				<div id="fixed_content">
 					<ul class="nav nav-tabs nav-justified">
@@ -118,10 +122,15 @@
 									</div>
 								</div>
 							</div>
+						
 						</div>
+					</div>
+					<div class="panel panel-default" id="results_container" style="display:none;">
+						<table class = "table table-striped" id="results" style="display:none;"></table>
 					</div>
 					<p><a class="btn btn-primary btn-lg" onclick="processFixed()" data-loading-text="Generating..." role="button">Generate Fixed Data</a></p>
 				</div>
+				<p><a class="btn btn-primary btn-lg" onclick="saveToExcel()" data-loading-text="Saving..." role="button">Save To Excel</a></p>
 			</div>
 		</div>
 	</div>
@@ -132,7 +141,7 @@
 				<span class="input-group-addon"></span>
 				<input type="text" class="form-control">
 			</div>
-		</div
+		</div>
 	</div>
 	<!-- <ul class="nav nav-tabs nav-justified" id="value_entry_container">
 		  <li class="active"><a href="#random" data-toggle="tab">Enter Random Values</a></li>
