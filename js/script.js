@@ -1,51 +1,69 @@
 var xmin, xmax, ymin, ymax, ydev, lxmin, lxmax, lymin, lymax, num_tests;
-var newCoords = [];
 var dataCoords = [];
+var newCoords = [];
 var isRandom = false;
 var TAB_FIXED_ENTRY = 0;
 var TAB_FIXED_INTERVAL = 1;
+var missing = false;
 
 function addFields() {
+	$("#step5").show();
 	var numRows = parseInt($("#num_values").val());
-	$("#value_entry_container").empty();
-	for(var i = 0; i < numRows; i++) {
-		var $template = $("#value_entry_template").clone();
-		$template.attr("id", i+1);
-		var $label = $template.find("span");
-		$label.html("x"+(i+1));
-		$template.appendTo("#value_entry_container");
+	var existingRows = $("#value_entry_container .input-group").length;
+	var itemIndex = 0;
+	var difference = Math.abs(numRows - existingRows);
+	
+	if(numRows > existingRows) {
+		for(var i = existingRows; i < existingRows + difference; i++) {
+			var $template = $("#value_entry_template").clone();
+			var $label = $template.find("span");
+			$template.attr("id", (i+1));
+			$label.html("x"+(i+1));
+			$template.appendTo("#value_entry_container");
+		}
+	} else if(numRows < existingRows) {
+		for(var k = existingRows; k > (existingRows - difference); k--) {
+			$("#value_entry_container #"+(k)).remove();
+		}
 	}
-}
-function applyYDev(y) {
+	//$("#value_entry_container").empty();
 
-	if(ydev != 0 && ydev != "") {
-		return (y + ((Math.random()*2*ydev) - ydev));
-	}
-	return y;
 }
 function processFixed() {
 	
-	getGraphInfo();
-	scaleCoords();
-	
-	if($("#fixed_content li.active").val() == TAB_FIXED_ENTRY) {
-		showResults(processEntries());
-	} else if($("#fixed_content li.active").val() == TAB_FIXED_INTERVAL) {
-		showResults(processIntervals());
+	missing = checkForMissing();
+	console.log(missing);
+	if(!missing) {
+		$("#excel_button").show();
+		getGraphInfo();
+		scaleCoords();
+		
+		if($("#fixed_content li.active").val() == TAB_FIXED_ENTRY) {
+			showResults(processEntries());
+		} else if($("#fixed_content li.active").val() == TAB_FIXED_INTERVAL) {
+			showResults(processIntervals());
+		}
 	}
 }
 function processRandom() {
 
-	getGraphInfo();
-	scaleCoords();
+	isRandom = true;
+	
+	missing = checkForMissing();
+	
+	if(!missing) {
+		$("#excel_button").show();
+		getGraphInfo();
+		scaleCoords();
 
-	showResults(processRandomValues());
+		showResults(processRandomValues());
+	}
 }
 function processEntries() {
 	//populate array with x values based on entries
 	var results = [];
 	
-	$("#value_entry_container input").each(function(index) {
+	$("#value_entry_container .input-group input").each(function(index) {
 		results.push($(this).val());
 	});
 	
@@ -55,7 +73,6 @@ function processIntervals() {
 	//populate array with x values based on intervals
 	var results = [];
 	var interval = $("#interval_amount").val();
-	//var numX = ((xmax-xmin)/interval) + 1;
 	var numX = (xmax-xmin)/interval;
 	
 	results.push(xmin);
@@ -85,18 +102,22 @@ function getGraphInfo() {
 }
 function scaleCoords() {
 	
+	clearCoords();
+	
 	var newX, newY, yVal;
 	
 	findMinAndMax();
 	
+	newCoords.push({"x":xmin, "y":ymin});
 	for(var k = 0; k < mousePos.length; k++) {
 		yVal = Math.abs(canvas.height - mousePos[k].y);
 		newX = roundToTwo((((mousePos[k].x)*(xmax-xmin))/(lxmax-lxmin)) + xmin);
 		newY = roundToTwo(((yVal*(ymax-ymin))/(lymax-lymin)) + ymin);
 		newCoords.push({"x":newX,"y":newY});
 	}
+	newCoords.push({"x":xmax, "y":ymax});
 	
-	//console.log("lxmin:"+lxmin+" lxmax:"+lxmax+" lymin:"+lymin+" lymax:"+lymax);
+	console.log("lxmin:"+lxmin+" lxmax:"+lxmax+" lymin:"+lymin+" lymax:"+lymax);
 }
 function findMinAndMax() {
 
@@ -135,7 +156,14 @@ function getApproximateYValue(x) {
 
 	var closest = null;
 	var previousIndex, closestIndex, x0, x1, y0, y1;
-
+	
+	//account for entry of max and min values
+	if(x == xmax) {
+		return applyYDev(ymax);
+	} else if(x == xmin) {
+		return applyYDev(ymin);
+	}
+	
 	for(var i = 0; i < newCoords.length; i++){
 	  if (closest == null || Math.abs(newCoords[i].x - x) < Math.abs(closest.x - x)) {
 		closest = newCoords[i];
@@ -148,7 +176,7 @@ function getApproximateYValue(x) {
 	} else {
 		previousIndex = closestIndex - 1;
 	}
-	
+
 	x0 = newCoords[previousIndex].x;
 	x1 = newCoords[closestIndex].x;
 	y0 = newCoords[previousIndex].y;
@@ -195,39 +223,121 @@ function showResults(array) {
 				break;
 			}
 		}
-		
 		resultMarkup += "</tr>";		
 	});
 
 	if(isRandom) {
+		$("#random_content").show();
 		$("#random_results_container").show();
 		$("#random_results_container").html(resultMarkup+"</table>");
 	} else {
 		$("#results_container").show();
 		$("#results_container").html(resultMarkup+"</table>");
 	}
-	//alert("finished!");
-	
 }
 function saveToExcel() {
+	var fileData;
+	var isIE = /msie/.test(navigator.userAgent.toLowerCase());
+	
 	if(isRandom) {
-		window.open('data:application/vnd.ms-excel,' + encodeURIComponent($('#random_results_container').html()));
+		fileData = 'data:application/vnd.ms-excel,' + encodeURIComponent($('#random_results_container').html());
+
 	}
 	else {
-		window.open('data:application/vnd.ms-excel,' + encodeURIComponent($('#results_container').html()));
+		fileData = 'data:application/vnd.ms-excel,' + encodeURIComponent($('#results_container').html());
 	}
-    e.preventDefault();
+	
+/*	if(isIE) {		
+		$.("#excel_button").attr("href", fileData);
+		
+		window.location = fileData;
+	} else {*/
+		window.open(fileData);
+	//}
 }
 function showFixed() {
 	isRandom = false;
+	$("#excel_button").hide();
 	$("#fixed_content").show();
+	$("#generate_fixed_button").show();
+	$("#generate_random_button").hide();
 	$("#random_content").hide();
 }
 function showRandom() {
 	isRandom = true;
+	$("#excel_button").hide();
 	$("#fixed_content").hide();
+	$("#generate_random_button").show();
+	$("#generate_fixed_button").hide();
 	$("#random_content").show();
 }
-function roundToTwo(num) {    
+function applyYDev(y) {
+
+	if(ydev != 0 && ydev != "") {
+		return (y + ((Math.random()*2*ydev) - ydev));
+	}
+	return y;
+}
+function roundToTwo(num) {
+	if(num % 10 == 0) {
+		return num;
+	}
     return +(Math.round(num + "e+2")  + "e-2");
+}
+function clearCoords() {
+	dataCoords = [];
+	newCoords = [];
+}
+function checkForMissing() {
+	missing = false;
+	//close existing error messages
+	$("#alert_container .alert").each(function() {
+		$(this).hide();
+	});
+
+	if(!mousePos[0] || mousePos == []) {
+		$("#drawing_alert").show();
+		return true;
+	}
+	$("#canvas_form .input-group input").each(function () {
+		if(!$(this).val()) {
+			$("#graph_info_alert").show();
+			missing = true;
+			return;
+		}
+	});
+	if(!$("#num_tests").val()) {
+		$("#num_tests_alert").show();
+			return true;
+	}
+	if(!isRandom) {
+			if($("#fixed_content li.active").val() == TAB_FIXED_ENTRY) {
+				if(!$("#num_values").val()) {
+					$("#step4_alert").show();
+					return true;
+				}
+				if($("#value_entry_container .input-group input").length == 0) {
+					$("#value_entry_alert").show();
+					return true;
+				}
+				$("#value_entry_container .input-group input").each(function () {
+					if(!$(this).val()) {
+						$("#value_entry_alert").show();
+						missing = true;
+						return;
+					}
+				});
+			} else if($("#fixed_content li.active").val() == TAB_FIXED_INTERVAL) {
+				if(!$("#interval_amount").val()) {
+					$("#step4_alert").show();
+					return true;
+				}
+			}	
+	}
+	
+	if(missing) {
+		return true;
+	}
+	
+	return false;
 }
